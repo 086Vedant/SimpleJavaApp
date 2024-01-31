@@ -32,7 +32,7 @@ jobs:
         else
           echo "Java process not found."
         fi
-        sleep(5)
+        sleep 5
         done
 
     - name: Upload Thread Dump Artifact
