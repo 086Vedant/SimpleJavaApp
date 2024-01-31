@@ -1,0 +1,37 @@
+name: Thread Dump Workflow
+
+on:
+  schedule:
+    - cron: "*/1 * * * *"
+
+jobs:
+  thread_dump:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4.1.1
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4.0.0
+
+    - name: Build and Run Java Application
+      run: |
+        javac SimpleJavaApp.java
+        java SimpleJavaApp &
+        
+    - name: Take Thread Dump
+      run: |
+        pid=$(jps | grep 'SimpleJavaApp' | awk '{print $1}')
+        if [ -n "$pid" ]; then
+          jcmd $pid Thread.dump_to_file thread_dump_$(date +"%Y%m%d%H%M%S").txt
+        else
+          echo "Java process not found."
+        fi
+
+    - name: Upload Thread Dump Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: thread-dump
+        path: thread_dump_*.txt   
+      
