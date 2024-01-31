@@ -36,7 +36,7 @@ jobs:
         done
 
     - name: Upload Thread Dump Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4.3.0
       with:
         name: thread-dump
         path: thread_dump_*.txt   
