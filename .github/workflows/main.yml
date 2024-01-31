@@ -2,7 +2,7 @@ name: Thread Dump Workflow
 
 on:
   schedule:
-    - cron: "*/1 * * * *"
+    - cron: "*/5 * * * *"
 
 jobs:
   thread_dump:
