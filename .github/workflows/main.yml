@@ -27,7 +27,7 @@ jobs:
       run: |
         pid=$(jps | grep 'SimpleJavaApp' | awk '{print $1}')
         if [ -n "$pid" ]; then
-          jcmd $pid Thread.dump_to_file thread_dump_$(date +"%Y%m%d%H%M%S").txt
+          jcmd $pid Thread.print > thread_dump_$(date +"%Y%m%d%H%M%S").txt
         else
           echo "Java process not found."
         fi
