@@ -25,12 +25,15 @@ jobs:
         
     - name: Take Thread Dump
       run: |
+        for i in {1..48}; do
         pid=$(jps | grep 'SimpleJavaApp' | awk '{print $1}')
         if [ -n "$pid" ]; then
           jcmd $pid Thread.print > thread_dump_$(date +"%Y%m%d%H%M%S").txt
         else
           echo "Java process not found."
         fi
+        sleep(5)
+        done
 
     - name: Upload Thread Dump Artifact
       uses: actions/upload-artifact@v2
