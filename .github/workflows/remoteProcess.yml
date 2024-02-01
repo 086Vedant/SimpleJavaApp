@@ -1,0 +1,42 @@
+# name: Thread Dump Workflow
+
+# on:
+#   schedule:
+#     - cron: "*/5 * * * *"
+
+# jobs:
+#   thread_dump:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Set up AWS 
+#       uses: aws-actions/configure-aws-credentials@v4
+#       with:
+#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#         aws-region: your-aws-region
+        
+#     - name: Install necessary tools
+#       run: |
+#         sudo apt-get update
+#         sudo apt-get install -y awscli
+#         sudo apt-get install -y kubectl
+#         sudo apt-get install -y openjdk-11-jdk    
+
+#     - name: Capture Thread Dump
+#       run: |
+#         cluster_name="your-eks-cluster-name"
+#         pod_name=$(aws eks list-pods --region your-aws-region --cluster-name $cluster_name --query 'podNames[0]' --output text)
+#         container_name=$(kubectl get pods $pod_name -o jsonpath='{.spec.containers[0].name}')
+#         pid=$(kubectl exec -it $pod_name -c $container_name -- jps | grep 'YourJavaProcess' | awk '{print $1}')
+#         if [ -n "$pid" ]; then
+#           kubectl exec -it $pod_name -c $container_name -- jcmd $pid Thread.print > thread_dump_$(date +"%Y%m%d%H%M%S").txt
+#         else
+#           echo "Java process not found in the pod."
+#         fi
+
+#     - name: Upload Thread Dump Artifacts
+#       uses: actions/upload-artifact@v4.3.0
+#       with:
+#         name: thread-dump
+#         path: thread_dump_*.txt
