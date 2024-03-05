@@ -27,3 +27,6 @@ The workflow can still be triggered on a schedule or manually.
 You need to establish a secure connection or tunnel between the runner and your AWS cluster instances to run commands.
 Additional setup and configuration are required to enable the runner to access and run commands on your AWS cluster instances.
 The connection or tunnel between the runner and your AWS cluster instances might introduce additional latency or complexity.
+
+##  Walkthrough: Use the AWS CLI with Run Command
+Link: https://docs.aws.amazon.com/systems-manager/latest/userguide/walkthrough-cli.html
