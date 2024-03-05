@@ -1,4 +1,4 @@
-# SimpleJavaApp
+# SimpleJavaApp - Thread Dump
 SimpleJavaApp for use workflow 
 
 # Add self hosted runner in git hub repo
