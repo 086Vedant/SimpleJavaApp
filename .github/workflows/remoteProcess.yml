@@ -30,7 +30,8 @@ jobs:
         run: |
           # Extract file content from the previous step
           FILE_CONTENT="${{ steps.get-file-content.outputs.file_content }}"
-
+           echo "::set-output name=file_content::$FILE_CONTENT"
+           
           # Send command to AWS Systems Manager with file content
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "i-0f8d918e0d566d9f9" \
