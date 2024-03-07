@@ -26,7 +26,7 @@ jobs:
           FILE_CONTENT=$(cat take-thread-dump.sh)
           
           # Send command to AWS Systems Manager with file content
-          for i in {1..21}; do
+          for i in {1..35}; do
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "i-0f8d918e0d566d9f9" \
             --document-name "AWS-RunShellScript" \
