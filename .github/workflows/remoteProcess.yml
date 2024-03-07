@@ -1,42 +1,53 @@
-# name: Thread Dump Workflow
+name: Thread Dump Workflow
 
-# on:
-#   schedule:
-#     - cron: "*/5 * * * *"
+on:
+  #schedule:
+   #- cron: '*/5 * * * *'  # Run the workflow every 5 minutes
+   push:
 
-# jobs:
-#   thread_dump:
-#     runs-on: ubuntu-latest
+jobs:
+  thread-dump:
+    runs-on: ubuntu-latest
 
-#     steps:
-#     - name: Set up AWS 
-#       uses: aws-actions/configure-aws-credentials@v4
-#       with:
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         aws-region: your-aws-region
-        
-#     - name: Install necessary tools
-#       run: |
-#         sudo apt-get update
-#         sudo apt-get install -y awscli
-#         sudo apt-get install -y kubectl
-#         sudo apt-get install -y openjdk-11-jdk    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.1
 
-#     - name: Capture Thread Dump
-#       run: |
-#         cluster_name="your-eks-cluster-name"
-#         pod_name=$(aws eks list-pods --region your-aws-region --cluster-name $cluster_name --query 'podNames[0]' --output text)
-#         container_name=$(kubectl get pods $pod_name -o jsonpath='{.spec.containers[0].name}')
-#         pid=$(kubectl exec -it $pod_name -c $container_name -- jps | grep 'YourJavaProcess' | awk '{print $1}')
-#         if [ -n "$pid" ]; then
-#           kubectl exec -it $pod_name -c $container_name -- jcmd $pid Thread.print > thread_dump_$(date +"%Y%m%d%H%M%S").txt
-#         else
-#           echo "Java process not found in the pod."
-#         fi
+      - name: Get file content
+        id: get-file-content
+        run: |
+          FILE_CONTENT=$(cat take-thread-dump.sh)
+          echo "::set-output name=file_content::$FILE_CONTENT"
 
-#     - name: Upload Thread Dump Artifacts
-#       uses: actions/upload-artifact@v4.3.0
-#       with:
-#         name: thread-dump
-#         path: thread_dump_*.txt
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1  # Replace with your AWS region
+
+      - name: Run shell script
+        run: |
+          # Extract file content from the previous step
+          FILE_CONTENT="${{ steps.get-file-content.outputs.file_content }}"
+
+          # Send command to AWS Systems Manager with file content
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "i-0f8d918e0d566d9f9" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Take thread dump" \
+            --parameters '{"commands":["echo \"$FILE_CONTENT\" > take-thread-dump.sh && chmod +x take-thread-dump.sh && ./take-thread-dump.sh"]}' \
+            --query 'Command.CommandId' \
+            --output text)
+          echo "Command ID: $COMMAND_ID"
+
+          # Wait for command completion
+          sleep 5s  # Wait for 5 seconds before retrieving command output
+          aws ssm get-command-invocation --command-id "${COMMAND_ID}" --instance-id "i-0f8d918e0d566d9f9" --output text --query "StandardOutputContent" > thread-dump.txt
+          echo "Thread dump saved to thread-dump.txt"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: thread-dump
+          path: thread-dump.txt
